@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace MeetUpCore.Models
 {
-    internal class UserReturningModel
+    public class UserReturningModel
     {
+        public string? UserName { get; set; }
+        public long? Id { get; set; }
     }
 }

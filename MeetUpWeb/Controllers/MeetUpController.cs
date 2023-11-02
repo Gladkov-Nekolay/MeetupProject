@@ -51,7 +51,7 @@ namespace MeetUpWeb.Controllers
         [Authorize]
         [Route("[action]")]
         [HttpGet]
-        public async Task<ActionResult<MeetUp>> GetMeetUpByID(long ID)
+        public async Task<ActionResult<MeetUpReturningModel>> GetMeetUpByID(long ID)
         {
             return new OkObjectResult(await _meetUpService.SearchMetUpAsync(ID));
         }
@@ -59,7 +59,7 @@ namespace MeetUpWeb.Controllers
         [Authorize]
         [Route("[action]")]
         [HttpGet]
-        public async Task<ActionResult<List<MeetUp>>> GetAllMeetUp([FromQuery] PaginationSettingsModel model) 
+        public async Task<ActionResult<List<MeetUpReturningModel>>> GetAllMeetUp([FromQuery] PaginationSettingsModel model) 
         {
             return new OkObjectResult(await _meetUpService.GetAllAsync(model));
         }

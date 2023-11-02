@@ -11,7 +11,7 @@ namespace MeetUpCore.Interface
     public interface IMeetUpRepository
     {
         public Task CreateMeetUpAsync(MeetUp meet);
-        public Task<MeetUp> SearchMetUpAsync(long ID);
+        public Task<MeetUp> SearchMeetUpAsync(long ID);
         public Task<List<MeetUp>> GetAllAsync(PaginationSettingsModel paginationSettingsModel);
         public Task UpdateMeetUpAsync(MeetUp meet);
         public Task DeleteMeetUpAsync(MeetUp MeetUpForDeleting);

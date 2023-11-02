@@ -30,6 +30,10 @@ namespace MeetUpCore.Profiles
                                                     .ForMember(x => x.OrganizerID, option => option.Ignore())
                                                     .ForMember(x => x.Organizer, option => option.Ignore());
 
+            CreateMap<MeetUp, MeetUpReturningModel>().ForMember(x=>x.MeetUpID,option=>option.MapFrom(src=>src.ID))
+                .ForMember(x => x.SpeakersIDs, 
+                option => option.MapFrom(src => src.Speakers.Select(x => x.Id).ToList()));
+
         }
     }
 }

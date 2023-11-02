@@ -32,14 +32,14 @@ namespace MeetUpCore.ServiceCore.MeetUps
             User Organizer = await _userManager.FindByIdAsync(OrganizerID.ToString());
             MapedMeetUp.Organizer = Organizer;
 
-            MapedMeetUp.Speakers = await GetUsersByIDs(meetCreationModel.SpeakersIDs);
+            await GetUsersByIDs(meetCreationModel.SpeakersIDs, MapedMeetUp);
 
             await _repository.CreateMeetUpAsync(MapedMeetUp);
         }
 
         public async Task DeleteMeetUpAsync(long MeetUpID, long UserID)
         {
-            MeetUp MeetUpForDelete = await _repository.SearchMetUpAsync(MeetUpID);
+            MeetUp MeetUpForDelete = await _repository.SearchMeetUpAsync(MeetUpID);
 
             if (MeetUpForDelete == null) 
             {
@@ -54,19 +54,29 @@ namespace MeetUpCore.ServiceCore.MeetUps
             await _repository.DeleteMeetUpAsync(MeetUpForDelete);
         }
 
-        public async Task<List<MeetUp>> GetAllAsync(PaginationSettingsModel paginationSettingsModel)
+        public async Task<List<MeetUpReturningModel>> GetAllAsync(PaginationSettingsModel paginationSettingsModel)
         {
-            return await _repository.GetAllAsync(paginationSettingsModel);
+            var AllMeetUps = await _repository.GetAllAsync(paginationSettingsModel);
+
+            List<MeetUpReturningModel> MeetupModelsList = new List<MeetUpReturningModel>();
+            foreach (var Meetup in AllMeetUps)
+            {
+                MeetUpReturningModel meetUpReturningModel = _mapper.Map<MeetUpReturningModel>(Meetup);
+                MeetupModelsList.Add(meetUpReturningModel);
+            }
+            return MeetupModelsList;
         }
 
-        public async Task<MeetUp> SearchMetUpAsync(long ID)
+        public async Task<MeetUpReturningModel> SearchMetUpAsync(long ID)
         {
-            return await _repository.SearchMetUpAsync(ID);
+            var Meetup = await _repository.SearchMeetUpAsync(ID);
+            MeetUpReturningModel meetUpReturningModel = _mapper.Map<MeetUpReturningModel>(Meetup);
+            return meetUpReturningModel;
         }
 
         public async Task UpdateMeetUpAsync(MeetUpUpdateModel UpdateModel, long OrganizerID)
         {
-            MeetUp MeetUpCheck = await _repository.SearchMetUpAsync(UpdateModel.MeetUpID);
+            MeetUp MeetUpCheck = await _repository.SearchMeetUpAsync(UpdateModel.MeetUpID);
 
             if (MeetUpCheck == null)
             {
@@ -78,20 +88,29 @@ namespace MeetUpCore.ServiceCore.MeetUps
                 throw new ArgumentException("You are not the organizer of meetup.");
             }
 
-            //MeetUpCheck = _mapper.Map<MeetUp>(UpdateModel);
             _mapper.Map(UpdateModel, MeetUpCheck);
 
-            MeetUpCheck.Speakers = await GetUsersByIDs(UpdateModel.SpeakersIDs);
-            
-            //MeetUpCheck.OrganizerID = OrganizerID;
+            await GetUsersByIDs(UpdateModel.AddSpeakersIDs, MeetUpCheck);
 
             await _repository.UpdateMeetUpAsync(MeetUpCheck);
 
         }
-        private async Task<List<User>> GetUsersByIDs(List<long> Ids) 
+        private async Task GetUsersByIDs(List<long> Ids, MeetUp meetUp) 
         {
-            List<User> Speakers = new List<User>();
+            if(!Ids.Any())
+            {
+                return;
+            }
 
+            if(meetUp.Speakers is null )
+            {
+                meetUp.Speakers = new();
+            }
+            else
+            {
+                meetUp.Speakers.Clear();
+            }
+            
             foreach (var SpeakerID in Ids)
             {
                 var Speaker = await _userManager.FindByIdAsync(SpeakerID.ToString());
@@ -101,10 +120,11 @@ namespace MeetUpCore.ServiceCore.MeetUps
                     throw new KeyNotFoundException($"There is no user with id {SpeakerID}");
                 }
 
-                Speakers.Add(Speaker);
+                meetUp.Speakers.Add(Speaker);
             }
 
-            return Speakers;
+            meetUp.Speakers = meetUp.Speakers.Distinct().ToList();
+   
         }
     }
 }

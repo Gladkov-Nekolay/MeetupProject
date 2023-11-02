@@ -36,12 +36,16 @@ namespace MeetUpInfrastructure.Repositories.EFRepositories
             return await _dbcontext.meetUps.OrderBy(p=>p.ID)
                 .Skip((paginationSettingsModel.PageNumber - 1)*paginationSettingsModel.PageSize)
                 .Take(paginationSettingsModel.PageSize)
+                .Include(p=>p.Speakers)
                 .ToListAsync();
         }
 
-        public async Task<MeetUp?> SearchMetUpAsync(long ID)
+        public async Task<MeetUp?> SearchMeetUpAsync(long ID)
         {
-            return await _dbcontext.meetUps.AsNoTracking().FirstOrDefaultAsync(x=>x.ID==ID);   
+            return await _dbcontext.meetUps
+                .AsNoTracking()
+                .Include(x=>x.Speakers)
+                .FirstOrDefaultAsync(x=>x.ID==ID);   
         }
 
         public async Task UpdateMeetUpAsync(MeetUp meet)

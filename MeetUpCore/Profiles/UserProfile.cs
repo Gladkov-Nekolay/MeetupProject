@@ -16,6 +16,7 @@ namespace MeetUpCore.Profiles
             CreateMap<User, UserCreationModel>()
                .ForMember(u => u.Name, option => option.MapFrom(src => src.UserName))
                .ReverseMap();
+            CreateMap<User, UserReturningModel>();
         }
     }
 }
